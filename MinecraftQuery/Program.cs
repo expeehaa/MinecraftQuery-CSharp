@@ -2,11 +2,12 @@
 
 namespace MinecraftQuery
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var query = new MinecraftQuery("localhost");
+            Console.ReadLine();
         }
     }
 }
