@@ -1,4 +1,8 @@
-﻿using System;
+﻿/*
+ * Copyright expeehaa
+ */
+
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -8,6 +12,7 @@ namespace MinecraftQuery
 {
     public class MinecraftQuery
     {
+        public bool ServerAvailable { get; set; }
         public string MotD { get; set; }
         public string Gametype { get; set; }
         public string GameId { get; set; }
@@ -23,7 +28,7 @@ namespace MinecraftQuery
         public MinecraftQuery(string host, short port = 25565) {
             var addresses = Dns.GetHostAddresses(host);
             if (addresses.Length == 0)
-                throw new ArgumentException("Unable to retrieve address from specified host name.", nameof(host));
+                ServerAvailable = false;
             Init(addresses[0], port);
         }
 
@@ -34,28 +39,37 @@ namespace MinecraftQuery
         private void Init(IPAddress ipAddress, short port) {
             //initialize UdpClient
             var ipendpoint = new IPEndPoint(ipAddress, port);
-            var client = IPAddress.IsLoopback(ipAddress) ? new UdpClient("localhost", port) : new UdpClient(ipendpoint);
+            byte[] byteresponse;
+            try {
+                using (var client = IPAddress.IsLoopback(ipAddress) ? new UdpClient("localhost", port) : new UdpClient(ipendpoint)) {
+                    client.Send(new byte[] { 0xFE, 0xFD, 0x09, 0x00, 0x00, 0x00, 0x01 }, 7);
+                    //receive handshake
+                    var handshake = client.Receive(ref ipendpoint);
+                    //parse token
+                    var tokenstring = Encoding.Default.GetString(handshake.Skip(5).ToArray());
+                    var tokennumber = int.Parse(tokenstring);
+                    var token = BitConverter.GetBytes(tokennumber);
+                    if (BitConverter.IsLittleEndian) Array.Reverse(token);
+                    //send full stat request
+                    var requestbytes = new byte[] { 0xFE, 0xFD, 0x00, 0x00, 0x00, 0x00, 0x01 }.Concat(token).Concat(new byte[] { 0x00, 0x00, 0x00, 0x00 }).ToArray();
+                    client.Send(requestbytes, requestbytes.Length);
+                    //receive full stat response
+                    byteresponse = client.Receive(ref ipendpoint);
+                }
+            }
+            catch (Exception) {
+                ServerAvailable = false;
+                return;
+            }
 
-            //Send Handshake
-            client.Send(new byte[] { 0xFE, 0xFD, 0x09, 0x00, 0x00, 0x00, 0x01 }, 7);
-            //receive handshake
-            var handshake = client.Receive(ref ipendpoint);
-            //parse token
-            var tokenstring = Encoding.Default.GetString(handshake.Skip(5).ToArray());
-            var tokennumber = int.Parse(tokenstring);
-            var token = BitConverter.GetBytes(tokennumber);
-            if (BitConverter.IsLittleEndian) Array.Reverse(token);
-            //send full stat request
-            var requestbytes = new byte[] { 0xFE, 0xFD, 0x00, 0x00, 0x00, 0x00, 0x01 }.Concat(token).Concat(new byte[] { 0x00, 0x00, 0x00, 0x00 }).ToArray();
-            client.Send(requestbytes, requestbytes.Length);
-            //receive full stat response
-            var byteresponse = client.Receive(ref ipendpoint);
             //parse response
             var buf1 = byteresponse.Skip(16).ToArray();
             var resp = Encoding.Default.GetString(buf1).Split("\x00\x01player_\x00\x00");
             var kv = resp[0].Split("\x00").ToList();
 
             //assign response data to fields
+            ServerAvailable = true;
+
             MotD = kv[1];
             Gametype = kv[3];
             GameId = kv[5];
