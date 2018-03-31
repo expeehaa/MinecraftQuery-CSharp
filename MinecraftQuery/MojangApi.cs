@@ -40,14 +40,7 @@ namespace MinecraftQuery
             hrm.EnsureSuccessStatusCode();
             var json = await hrm.Content.ReadAsStringAsync().ConfigureAwait(false);
             var data = JsonConvert.DeserializeObject<List<JsonNameTime>>(json);
-            var an = new AccountNames
-            {
-                FirstName = data.First().Name
-            };
-
-            foreach (var jnt in data.Skip(1).ToList())
-                an.TryAdd(jnt.Time, jnt.Name);
-            return an;
+            return new AccountNames(data.ToDictionary(jnt => jnt.UnixTime == 0 ? DateTime.MinValue : jnt.Time, jnt => jnt.Name));
         }
 
         public class JsonNameTime

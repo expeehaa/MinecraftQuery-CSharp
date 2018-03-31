@@ -6,9 +6,11 @@ namespace MinecraftQuery.Models
 {
     public class AccountNames : Dictionary<DateTime, string>
     {
-        public string FirstName { get; set; }
+        public AccountNames(IDictionary<DateTime, string> dictionary) : base(dictionary)
+        {
+        }
 
         public override string ToString() 
-            => $"First name: {FirstName}, {string.Join(", ", this.Select(kv => $"since {kv.Key:dd.MM.yyyy}: {kv.Value}"))}";
+            => string.Join(", ", this.Select(kv => kv.Key == DateTime.MinValue ? $"First name: {kv.Value}" : $"since {kv.Key:dd.MM.yyyy}: {kv.Value}"));
     }
 }
