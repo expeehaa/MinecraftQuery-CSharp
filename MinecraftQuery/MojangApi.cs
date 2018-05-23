@@ -52,8 +52,8 @@ namespace MinecraftQuery
             var results = new Dictionary<MojangService, ServiceStatus>();
             foreach (var (server, status) in json)
             {
-                var ms = MojangService.FromServername(server);
-                if (ms != null && Enum.TryParse(status, true, out ServiceStatus stat))
+                var ms = MojangService.FromServername(server) ?? new MojangService(server);
+                if (Enum.TryParse(status, true, out ServiceStatus stat))
                     results.Add(ms, stat);
             }
 
