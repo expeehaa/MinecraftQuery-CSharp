@@ -48,12 +48,12 @@ namespace MinecraftQuery
             var hrm = await _httpClient.GetAsync("https://status.mojang.com/check").ConfigureAwait(false);
             hrm.EnsureSuccessStatusCode();
             var jsonstring = await hrm.Content.ReadAsStringAsync().ConfigureAwait(false);
-            var json = JsonConvert.DeserializeObject<Dictionary<string, string>[]>(jsonstring).Select(d => (d.First().Key, d.First().Value)).ToList();
+            var json = JsonConvert.DeserializeObject<Dictionary<string, string>[]>(jsonstring).Select(d => d.First()).ToList();
             var results = new Dictionary<MojangService, ServiceStatus>();
-            foreach (var (server, status) in json)
+            foreach (var kv in json)
             {
-                var ms = MojangService.FromServername(server) ?? new MojangService(server);
-                if (Enum.TryParse(status, true, out ServiceStatus stat))
+                var ms = MojangService.FromServername(kv.Key) ?? new MojangService(kv.Key);
+                if (Enum.TryParse(kv.Value, true, out ServiceStatus stat))
                     results.Add(ms, stat);
             }
 
