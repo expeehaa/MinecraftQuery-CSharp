@@ -43,6 +43,23 @@ namespace MinecraftQuery
             return new AccountNames(data.ToDictionary(jnt => jnt.UnixTime == 0 ? DateTime.MinValue : jnt.Time, jnt => jnt.Name));
         }
 
+        public async Task<Dictionary<MojangService, ServiceStatus>> GetServiceStatus()
+        {
+            var hrm = await _httpClient.GetAsync("https://status.mojang.com/check").ConfigureAwait(false);
+            hrm.EnsureSuccessStatusCode();
+            var jsonstring = await hrm.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var json = JsonConvert.DeserializeObject<Dictionary<string, string>[]>(jsonstring).Select(d => (d.First().Key, d.First().Value)).ToList();
+            var results = new Dictionary<MojangService, ServiceStatus>();
+            foreach (var (server, status) in json)
+            {
+                var ms = MojangService.FromServername(server);
+                if (ms != null && Enum.TryParse(status, true, out ServiceStatus stat))
+                    results.Add(ms, stat);
+            }
+
+            return results;
+        } 
+
         public class JsonNameTime
         {
             [JsonProperty("name")]
