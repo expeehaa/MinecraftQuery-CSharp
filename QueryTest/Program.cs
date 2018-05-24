@@ -15,6 +15,11 @@ namespace QueryTest
             Console.WriteLine(xphnames.ToString());
             var servicestatus = mapi.GetServiceStatus().GetAwaiter().GetResult();
             Console.WriteLine(string.Join(", ", servicestatus.Select(kv => $"{kv.Key.Name}: {kv.Value}")));
+            //var mq = new ServerQuery("");
+            //Console.WriteLine($"Online: {mq.ServerAvailable}\nMotD: {mq.MotD}\nPlayers: {mq.CurrentPlayers}/{mq.MaxPlayers}");
+            var sp = new ServerPinger("gommehd.net", 25565);
+            Console.WriteLine($"Serverstatus: {(sp.ServerAvailable ? "Online" : "Offline")}\nPing: {sp.Ping}\nMotD: {sp.MotD}\nPlayers: {sp.CurrentPlayers}/{sp.MaxPlayers}");
+
             Console.ReadKey();
         }
     }

@@ -10,7 +10,7 @@ using System.Text;
 
 namespace MinecraftQuery
 {
-    public class MinecraftQuery
+    public class ServerQuery
     {
         public bool ServerAvailable { get; set; }
         public string MotD { get; set; }
@@ -25,14 +25,14 @@ namespace MinecraftQuery
         public string HostIp { get; set; }
         public string[] Players { get; set; }
 
-        public MinecraftQuery(string host, short port = 25565) {
+        public ServerQuery(string host, short port = 25565) {
             var addresses = Dns.GetHostAddresses(host);
             if (addresses.Length == 0)
                 ServerAvailable = false;
             Init(addresses[0], port);
         }
 
-        public MinecraftQuery(IPAddress ipAddress, short port = 25565) {
+        public ServerQuery(IPAddress ipAddress, short port = 25565) {
             Init(ipAddress, port);
         }
 
