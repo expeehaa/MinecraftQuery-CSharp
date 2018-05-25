@@ -76,11 +76,16 @@ namespace MinecraftQuery
 
         private class JsonNameTime
         {
+
+#pragma warning disable 0649
+
             [JsonProperty("name")]
-            public string Name;
+            public string Name { get; set; }
 
             [JsonProperty("changedToAt")]
-            public long UnixTime;
+            public long UnixTime { get; set; }
+
+#pragma warning restore 0649
 
             public DateTime Time => UnixTime.ToDateTime();
         }
