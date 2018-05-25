@@ -1,4 +1,4 @@
-﻿namespace MinecraftQuery.Models
+﻿namespace MinecraftQuery
 {
     public enum ServiceStatus
     {

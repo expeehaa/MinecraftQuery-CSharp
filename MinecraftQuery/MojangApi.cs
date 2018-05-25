@@ -4,12 +4,11 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using MinecraftQuery.Models;
 using Newtonsoft.Json;
 
 namespace MinecraftQuery
 {
-    public class MojangApi
+    public sealed class MojangApi
     {
         private HttpClient _httpClient;
 
@@ -20,8 +19,15 @@ namespace MinecraftQuery
 
         private void InitHttpClient()
         {
-            _httpClient = new HttpClient {BaseAddress = new Uri("https://api.mojang.com/")};
+            _httpClient = new HttpClient
+            {
+                BaseAddress = new Uri("https://api.mojang.com/"),
+                Timeout = TimeSpan.FromSeconds(6)
+            };
         }
+
+        public AccountInfo GetAccountInfo(string username, DateTime? date = null)
+            => GetAccountInfoAsync(username, date).GetAwaiter().GetResult();
 
         public async Task<AccountInfo> GetAccountInfoAsync(string username, DateTime? date = null)
         {
@@ -33,6 +39,10 @@ namespace MinecraftQuery
             return JsonConvert.DeserializeObject<AccountInfo>(json);
         }
 
+
+        public AccountNames GetAllAccountNames(string uuid)
+            => GetAllAccountNamesAsync(uuid).GetAwaiter().GetResult();
+
         public async Task<AccountNames> GetAllAccountNamesAsync(string uuid)
         {
             var hrm = await _httpClient.GetAsync($"/user/profiles/{uuid}/names");
@@ -43,7 +53,11 @@ namespace MinecraftQuery
             return new AccountNames(data.ToDictionary(jnt => jnt.UnixTime == 0 ? DateTime.MinValue : jnt.Time, jnt => jnt.Name));
         }
 
-        public async Task<Dictionary<MojangService, ServiceStatus>> GetServiceStatus()
+
+        public Dictionary<MojangService, ServiceStatus> GetServiceStatus()
+            => GetServiceStatusAsync().GetAwaiter().GetResult();
+
+        public async Task<Dictionary<MojangService, ServiceStatus>> GetServiceStatusAsync()
         {
             var hrm = await _httpClient.GetAsync("https://status.mojang.com/check").ConfigureAwait(false);
             hrm.EnsureSuccessStatusCode();
@@ -60,7 +74,7 @@ namespace MinecraftQuery
             return results;
         } 
 
-        public class JsonNameTime
+        private class JsonNameTime
         {
             [JsonProperty("name")]
             public string Name;

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MinecraftQuery.Models
+namespace MinecraftQuery
 {
     public class AccountNames : Dictionary<DateTime, string>
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace MinecraftQuery.Models
+namespace MinecraftQuery
 {
     public sealed class MojangService
     {
@@ -42,7 +42,7 @@ namespace MinecraftQuery.Models
             Servername = servername;
         }
 
-        public MojangService(string name)
+        internal MojangService(string name)
         {
             Name = name;
         }
