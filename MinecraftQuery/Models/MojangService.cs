@@ -20,15 +20,15 @@ namespace MinecraftQuery.Models
 
         static MojangService()
         {
-            Services = new[]
-            {
+            Services =
+            [
                 MinecraftNet,
                 AccountsWebsite,
                 Authentication,
                 MultiplayerSession,
                 MinecraftSkins,
                 PublicApi
-            };
+            ];
         }
 
         public static MojangService FromServername(string servername) 

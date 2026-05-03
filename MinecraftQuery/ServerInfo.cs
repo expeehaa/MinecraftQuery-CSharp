@@ -74,7 +74,7 @@ namespace MinecraftQuery
             if (!streamData.Any()) return status;
             var datastring = Encoding.Unicode.GetString(streamData);
             var data = datastring.Split("\u0000\u0000\u0000".ToCharArray());
-            if (data == null || data.Length < NumFields) return status;
+            if (data.Length < NumFields) return status;
             status.ServerAvailable = true;
             status.Version = data[2];
             status.MotD = Regex.Replace(data[3], "§([0-9]|[a-f]|[A-F])", "");
@@ -101,7 +101,7 @@ namespace MinecraftQuery
                 client.Connect(query.HostAddress, query.HostPort);
                 pingTest.Stop();
 
-                client.Send(new byte[] {0xFE, 0xFD, 0x09, 0x00, 0x00, 0x00, 0x01}, 7);
+                await client.SendAsync([0xFE, 0xFD, 0x09, 0x00, 0x00, 0x00, 0x01], 7);
                 var receive = new Func<UdpClient, Task<byte[]>>(async c =>
                 {
                     var resTask = c.ReceiveAsync();
@@ -115,8 +115,8 @@ namespace MinecraftQuery
                 var token = BitConverter.GetBytes(tokennumber);
                 if (BitConverter.IsLittleEndian) Array.Reverse(token);
 
-                var requestbytes = new byte[] { 0xFE, 0xFD, 0x00, 0x00, 0x00, 0x00, 0x01 }.Concat(token).Concat(new byte[] { 0x00, 0x00, 0x00, 0x00 }).ToArray();
-                client.Send(requestbytes, requestbytes.Length);
+                var requestbytes = new byte[] { 0xFE, 0xFD, 0x00, 0x00, 0x00, 0x00, 0x01 }.Concat(token).Concat("\0\0\0\0"u8.ToArray()).ToArray();
+                await client.SendAsync(requestbytes, requestbytes.Length);
                 byteresponse = await receive(client).ConfigureAwait(false);
                 if (byteresponse == null) return query;
 
@@ -129,8 +129,8 @@ namespace MinecraftQuery
 
             //parse response
             var buf1 = byteresponse.Skip(16).ToArray();
-            var resp = Encoding.Default.GetString(buf1).Split("\x00\x01player_\x00\x00");
-            var kv = resp[0].Split("\x00").ToList();
+            var resp = Encoding.Default.GetString(buf1).Split("\0\u0001player_\0\0");
+            var kv = resp[0].Split("\0").ToList();
 
             //assign response data to fields
             query.ServerAvailable = true;
@@ -144,7 +144,7 @@ namespace MinecraftQuery
             query.CurrentPlayers = kv[13];
             query.MaxPlayers = kv[15];
             query.HostIp = kv[19];
-            query.Players = resp[1].Split("\x00").Where(p => !string.IsNullOrWhiteSpace(p)).ToArray();
+            query.Players = resp[1].Split("\0").Where(p => !string.IsNullOrWhiteSpace(p)).ToArray();
 
             return query;
         }
