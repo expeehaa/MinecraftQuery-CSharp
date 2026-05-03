@@ -1,4 +1,4 @@
-﻿namespace MinecraftQuery
+﻿namespace MinecraftQuery.Models
 {
     public class StatusResult : PingResult
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace MinecraftQuery
+namespace MinecraftQuery.Models
 {
     public sealed class MojangService
     {

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using MinecraftQuery.Models;
 using Newtonsoft.Json;
 
 namespace MinecraftQuery

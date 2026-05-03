@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace MinecraftQuery
+namespace MinecraftQuery.Models
 {
     public struct AccountInfo
     {
